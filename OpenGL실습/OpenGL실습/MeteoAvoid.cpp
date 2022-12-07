@@ -13,6 +13,8 @@
 #include <atlfile.h>
 #include <random>
 
+#define METEO_MAX 5
+
 using namespace std;
 
 GLvoid drawScene(GLvoid);
@@ -30,6 +32,8 @@ void TimerFunction2(int value);
 void TimerFunction3(int value);
 void TimerFunction4(int value);
 void TimerFunction5(int value);
+void TimerFunction6(int value);
+
 
 
 void SpecialKey(int key, int x, int y);
@@ -40,25 +44,31 @@ GLuint vertexShader; // πˆ≈ÿΩ∫ ºŒ¿Ã¥ı ∞¥√º
 GLuint fragmentShader; // «¡∑°±◊∏’∆Æ ºŒ¿Ã¥ı ∞¥√º
 GLuint s_program;
 
+
+GLfloat rColor, gColor, bColor;
+
 void InitBuffer();
 void InitShader();
 
 random_device rd;
 std::mt19937 gen(rd());
-std::uniform_int_distribution<int> dist(0, 9);
+std::uniform_int_distribution<int> dist(0, 18);
 
 
 vector<glm::vec3> vertices_cube;
 vector<glm::vec2> uvs_cube;
 vector<glm::vec3> normals_cube;
 
-vector<glm::vec3> vertices_corn;
-vector<glm::vec2> uvs_corn;
-vector<glm::vec3> normals_corn;
+vector<glm::vec3> vertices_player;
+vector<glm::vec2> uvs_player;
+vector<glm::vec3> normals_player;
+
+
 
 bool cube = loadObj("cube.obj", vertices_cube, uvs_cube, normals_cube);
-
+//bool player = loadObj("player.obj", vertices_player, uvs_player, normals_player);
 GLuint VAO, VBO, VBO_NormalCube;
+GLuint VAO_Player, VBO_Player, VBO_Player_normal;
 GLuint colorBuffer, colorBuffercorn;
 
 
@@ -66,6 +76,7 @@ bool timer1 = false;
 bool timer2 = false;
 bool timer3 = false;
 bool timer4 = false;
+bool timer6 = true;
 
 float PlayerRotateZ = 0.0f;
 float PlayerRotateX = 0.0f;
@@ -75,6 +86,27 @@ float PlayerY = 0.0f;
 
 float ParticleStart = 0.5f;
 float ParticleZ = 0.5f;
+float missileZ = 7;
+
+float missile_xpos = 0;
+float missile_ypos = 0;
+
+float missileRotateX = 0;
+float missileRotateZ = 0;
+
+bool Is_missile_ready = true;
+int MeteoCounter = 0;
+struct Meteo
+{
+	float Xpos;
+	float Ypos;
+	float Zpos;
+
+	bool hit = false;
+};
+
+
+Meteo Meteos[METEO_MAX];
 
 void main(int argc, char* argv[])
 {
@@ -100,6 +132,25 @@ void main(int argc, char* argv[])
 	glewInit();
 
 
+
+	for (int i = 0; i < 5; ++i)
+	{
+		if (i % 2 == 0)
+		{
+			Meteos[i].Xpos = dist(rd) / 10;
+			Meteos[i].Ypos = dist(rd) / 10;
+		}
+		else
+		{
+			Meteos[i].Xpos = -(dist(rd) / 10);
+			Meteos[i].Ypos = -(dist(rd) / 10);
+		}
+		Meteos[i].Zpos = -25.f;
+	}
+
+	glutTimerFunc(100, TimerFunction6, 1); 
+	glutTimerFunc(100, TimerFunction5, 1);
+
 	InitShader();
 	InitBuffer();
 	glutKeyboardFunc(Keyboard);
@@ -109,6 +160,7 @@ void main(int argc, char* argv[])
 
 	glutMainLoop();
 }
+
 
 void make_vertexShaders()
 {
@@ -199,6 +251,24 @@ void InitBuffer()
 
 	//----------------------------------------------------------------------------------------------------------------------------------
 
+	//glGenVertexArrays(1, &VAO_Player);
+	//glBindVertexArray(VAO_Player);
+
+	//glGenBuffers(1, &VBO_Player);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO_Player);
+	//glBufferData(GL_ARRAY_BUFFER, vertices_player.size() * sizeof(glm::vec3), &vertices_player[0], GL_STATIC_DRAW);
+
+	//glEnableVertexAttribArray(0);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO_Player);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+	//glGenBuffers(1, &VBO_Player_normal);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO_Player_normal);
+	//glBufferData(GL_ARRAY_BUFFER, normals_player.size() * sizeof(glm::vec3), &normals_player[0], GL_STATIC_DRAW);
+
+	//glEnableVertexAttribArray(1);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO_Player_normal);
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 	//---------------------------------------------------------------------------------------------------------------------------------
 
 }
@@ -228,11 +298,6 @@ GLvoid ReShape(int w, int h)
 
 GLvoid drawScene()
 {
-	GLfloat rColor, gColor, bColor;
-
-	rColor = gColor = bColor = 0.0f;
-
-
 	glClearColor(rColor, gColor, bColor, 1.0f);
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -287,6 +352,7 @@ GLvoid drawScene()
 		unsigned int  modelLocation = glGetUniformLocation(s_program, "modelMatrix");
 		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(Player));
 		glBindVertexArray(VAO);
+		//glBindVertexArray(VAO_Player);
 		glDrawArrays(GL_TRIANGLES, 0, 3 * 12);
 	}
 
@@ -311,6 +377,54 @@ GLvoid drawScene()
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3 * 12);
 	}
+
+	//projectile
+	{
+		unsigned int objColorLocation = glGetUniformLocation(s_program, "objectColor");
+		glUniform3f(objColorLocation, 0.0f, 0.0f, 1.0f);
+
+		glm::mat4 missile = glm::mat4(1.0f);
+
+
+		missile = glm::translate(missile, glm::vec3(missile_xpos, missile_ypos, missileZ));
+
+		missile = glm::rotate(missile, glm::radians(missileRotateX), glm::vec3(1.0f, 0.0f, 0.0f));
+		missile = glm::rotate(missile, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		missile = glm::rotate(missile, glm::radians(missileRotateZ), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		missile = glm::scale(missile, glm::vec3(0.25f, 0.25f, 0.25f));
+
+		unsigned int  modelLocation = glGetUniformLocation(s_program, "modelMatrix");
+		glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(missile));
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 3 * 12);
+	}
+
+
+	if (MeteoCounter < METEO_MAX)
+	{
+		{
+			unsigned int objColorLocation = glGetUniformLocation(s_program, "objectColor");
+			glUniform3f(objColorLocation, 1.0f, 1.0f, 1.0f);
+
+			glm::mat4 Meteo = glm::mat4(1.0f);
+
+
+			Meteo = glm::translate(Meteo, glm::vec3(Meteos[MeteoCounter].Xpos, Meteos[MeteoCounter].Ypos, Meteos[MeteoCounter].Zpos));
+
+			Meteo = glm::rotate(Meteo, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+			Meteo = glm::rotate(Meteo, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			Meteo = glm::rotate(Meteo, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+			Meteo = glm::scale(Meteo, glm::vec3(0.5f, 0.5f, 0.5f));
+
+			unsigned int  modelLocation = glGetUniformLocation(s_program, "modelMatrix");
+			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(Meteo));
+			glBindVertexArray(VAO);
+			glDrawArrays(GL_TRIANGLES, 0, 3 * 12);
+		}
+	}
+	
 
 	timer3 = true;
 	glutTimerFunc(10, TimerFunction3, 1);
@@ -431,6 +545,15 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 		glutTimerFunc(100, TimerFunction2, 1);
 		break;
 
+	case 'k':
+		missile_xpos = PlayerX;
+		missile_ypos = PlayerY;
+		Is_missile_ready = false;
+		missileZ = 0;
+		glutTimerFunc(100, TimerFunction4, 1);
+		break;
+
+
 	case 'q':
 		exit(1);
 		break;
@@ -501,17 +624,65 @@ void TimerFunction3(int value)
 	glutPostRedisplay();
 
 	if (timer3)
-		glutTimerFunc(10, TimerFunction3, 1);
+		glutTimerFunc(100, TimerFunction3, 1);
 }
 
 
 void TimerFunction4(int value)
 {
 
+	missileZ -= 2.f;
 	
-	if (timer4)
+	missileRotateX--;
+	missileRotateZ++;
+
+	if (missileZ < -40.f)
+	{
+		Is_missile_ready = true;
+		missileZ = 7;
+	}
+
+
+	if (!Is_missile_ready)
 		glutTimerFunc(100, TimerFunction4, 1);
 }
+
+
+
+void TimerFunction5(int value)
+{
+
+	Meteos[MeteoCounter].Zpos++;
+
+	if (Meteos[MeteoCounter].Zpos > 5.f)
+	{
+		MeteoCounter++;
+	}
+	
+	if(MeteoCounter< METEO_MAX)
+		glutTimerFunc(100, TimerFunction5, 1);
+}
+
+
+
+void TimerFunction6(int value)
+{
+
+
+	if (MeteoCounter >= METEO_MAX)
+	{
+
+		rColor += 0.1f;
+		gColor += 0.1f;
+		bColor += 0.1f;
+	}
+
+	glutPostRedisplay();
+	if (timer6)
+		glutTimerFunc(100, TimerFunction6, 1);
+}
+
+
 
 
 void SpecialKey(int key, int x, int y)
