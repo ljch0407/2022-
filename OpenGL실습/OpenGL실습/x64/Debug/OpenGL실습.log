@@ -1,0 +1,8 @@
+﻿  MeteoAvoid.cpp
+C:\Users\tlseh\OneDrive\Desktop\CG_Project\2022-\OpenGL실습\OpenGL실습\MeteoAvoid.cpp(112,1): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
+C:\Users\tlseh\OneDrive\Desktop\CG_Project\2022-\OpenGL실습\OpenGL실습\MeteoAvoid.cpp(140,30): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\tlseh\OneDrive\Desktop\CG_Project\2022-\OpenGL실습\OpenGL실습\MeteoAvoid.cpp(141,30): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\tlseh\OneDrive\Desktop\CG_Project\2022-\OpenGL실습\OpenGL실습\MeteoAvoid.cpp(145,21): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\tlseh\OneDrive\Desktop\CG_Project\2022-\OpenGL실습\OpenGL실습\MeteoAvoid.cpp(146,21): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\tlseh\OneDrive\Desktop\CG_Project\2022-\OpenGL실습\OpenGL실습\MeteoAvoid.cpp(515): warning C4715: 'loadObj': 모든 제어 경로에서 값을 반환하지는 않습니다.
+  OpenGL실습.vcxproj -> C:\Users\tlseh\OneDrive\Desktop\CG_Project\2022-\OpenGL실습\x64\Debug\OpenGL실습.exe

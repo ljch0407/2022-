@@ -65,8 +65,8 @@ vector<glm::vec3> normals_player;
 
 
 
-bool cube = loadObj("cube.obj", vertices_cube, uvs_cube, normals_cube);
-//bool player = loadObj("player.obj", vertices_player, uvs_player, normals_player);
+//bool cube = loadObj("cube.obj", vertices_cube, uvs_cube, normals_cube);
+bool player = loadObj("player.obj", vertices_player, uvs_player, normals_player);
 GLuint VAO, VBO, VBO_NormalCube;
 GLuint VAO_Player, VBO_Player, VBO_Player_normal;
 GLuint colorBuffer, colorBuffercorn;
@@ -230,7 +230,7 @@ GLuint make_shaderProgram()
 
 void InitBuffer()
 {
-	glGenVertexArrays(1, &VAO);
+	/*glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
 	glGenBuffers(1, &VBO);
@@ -247,28 +247,28 @@ void InitBuffer()
 
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_NormalCube);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);*/
 
 	//----------------------------------------------------------------------------------------------------------------------------------
 
-	//glGenVertexArrays(1, &VAO_Player);
-	//glBindVertexArray(VAO_Player);
+	glGenVertexArrays(1, &VAO_Player);
+	glBindVertexArray(VAO_Player);
 
-	//glGenBuffers(1, &VBO_Player);
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO_Player);
-	//glBufferData(GL_ARRAY_BUFFER, vertices_player.size() * sizeof(glm::vec3), &vertices_player[0], GL_STATIC_DRAW);
+	glGenBuffers(1, &VBO_Player);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_Player);
+	glBufferData(GL_ARRAY_BUFFER, vertices_player.size() * sizeof(glm::vec3), &vertices_player[0], GL_STATIC_DRAW);
 
-	//glEnableVertexAttribArray(0);
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO_Player);
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_Player);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-	//glGenBuffers(1, &VBO_Player_normal);
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO_Player_normal);
-	//glBufferData(GL_ARRAY_BUFFER, normals_player.size() * sizeof(glm::vec3), &normals_player[0], GL_STATIC_DRAW);
+	glGenBuffers(1, &VBO_Player_normal);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_Player_normal);
+	glBufferData(GL_ARRAY_BUFFER, normals_player.size() * sizeof(glm::vec3), &normals_player[0], GL_STATIC_DRAW);
 
-	//glEnableVertexAttribArray(1);
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO_Player_normal);
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_Player_normal);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 	//---------------------------------------------------------------------------------------------------------------------------------
 
 }
